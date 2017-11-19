@@ -28,7 +28,12 @@ def ReadFile(path):
     
     file['category'] = file['category'].str.split(':').str[-1]
     file['category'] = file['category'].str.split('"').str[1]
+    file['subcategory'] = file['category'].str.split('/').str[1]
+    file['category'] = file['category'].str.split('/').str[0]
     
+    file['deadline']=pandas.to_datetime(file['deadline'], unit='s')
+    file['launched_at']=pandas.to_datetime(file['launched_at'], unit='s')
+      
     #file.dropna(inplace = True)    
     return file
 
@@ -56,5 +61,3 @@ bigFile.drop_duplicates(inplace = True)
 # Guardar archivo
 print("Guardando archivo consolidado")
 bigFile.to_csv("consolidado.csv", sep = ";", na_rep = '', index = False)
-
-
