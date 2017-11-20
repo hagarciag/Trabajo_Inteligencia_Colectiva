@@ -18,7 +18,7 @@ def ReadFile(path):
                             'state', 'pledged', 'state', 'country',
                             'currency', 'deadline', 'launched_at',
                             'backers_count', 'creator', 'location',
-                            'category', 'spotlight'])
+                            'category', 'spotlight', 'staff_pick'])
 
     file['location'] = file['location'].str.split('displayable_name').str[1]
     file['location'] = file['location'].str.split('"').str[2]
