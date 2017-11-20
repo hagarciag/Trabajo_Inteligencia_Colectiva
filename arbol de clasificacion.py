@@ -1,10 +1,3 @@
-
-# coding: utf-8
-
-# In[84]:
-
-
-from sklearn.datasets import load_iris  
 from sklearn import tree  
 import pydotplus  
 from IPython.display import Image  
@@ -15,7 +8,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn import preprocessing
 import sklearn.metrics as sm
 from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import BaggingClassifier
 
+#Lectura archivo
 data=pd.read_csv('consolidado.csv',  # el archivo
                     sep = ';',         # separador de campos
                     thousands = None,  # separador de miles para números
@@ -23,60 +18,102 @@ data=pd.read_csv('consolidado.csv',  # el archivo
                     skiprows = 0,
                     header=0)     # separador de los decimales para números
 
-#cols = list(data.loc[:,'goal':'pledged']) + ['backers_count']  + ['category'] + ['subcategory'] + ['state']
-cols = list(data.loc[:,'goal':'goal']) + ['backers_count']  + ['category'] + ['subcategory'] + ['state']
+#Semanas campaña
+data['semanas_campana'] = ((pd.to_datetime(data['deadline']) - pd.to_datetime(data['launched_at']))/ np.timedelta64(1, 'W')).astype(int)
+
+#Longitud descripcion
+sizes = [len(i) for i in data['blurb'].astype(str)]
+data['longitud_descripcion']=sizes
+
+#Variables dummy de categoria
+df_categoria = pd.get_dummies(data['category'])
+data = data.join(df_categoria)
+
+#Variables dummy de country
+df_country = pd.get_dummies(data['country'])
+data = data.join(df_country)
+
+#Variables dummy de subcategory
+df_subcategory = pd.get_dummies(data['subcategory'])
+data = data.join(df_subcategory)
+
+#Normalizar valor objetivo
+#data['goal'] = preprocessing.scale(data['goal'])
+#longitud_descripcion
+cols = ['goal', 'semanas_campana', 'art', 'comics', 'crafts',
+       'dance', 'design', 'fashion', 'film & video', 'food', 'games',
+       'journalism', 'music', 'photography', 'publishing', 'technology',
+       'theater', 
+       'AT', 'AU', 'BE', 'CA', 'CH', 'DE', 'DK', 'ES', 'FR', 'GB', 'HK', 'IE', 'IT', 'JP', 'LU', 'MX', 'NL', 'NO', 
+'NZ', 'SE', 'SG', 'US', '3d printing', 'academic', 'accessories', 'action', 'animals', 'animation', 'anthologies', 
+'apparel', 'apps', 'architecture', 'art books', 'audio', 'bacon', 'blues', 'calendars', 'camera equipment', 'candles', 
+'ceramics', 'children\'s books', 'childrenswear', 'chiptune', 'civic design', 'classical music', 'comedy', 
+'comic books', 'community gardens', 'conceptual art', 'cookbooks', 'country & folk', 'couture', 'crochet', 
+'digital art', 'diy', 'diy electronics', 'documentary', 'drama', 'drinks', 'electronic music', 'embroidery', 
+'events', 'experimental', 'fabrication tools', 'faith', 'family', 'fantasy', 'farmer\'s markets', 'farms', 
+'festivals', 'fiction', 'fine art', 'flight', 'food trucks', 'footwear', 'gadgets', 'gaming hardware', 'glass', 
+'graphic design', 'graphic novels', 'hardware', 'hip-hop', 'horror', 'illustration', 'immersive', 'indie rock', 
+'installations', 'interactive design', 'jazz', 'jewelry', 'kids', 'knitting', 'latin', 'letterpress', 
+'literary journals', 'literary spaces', 'live games', 'makerspaces', 'metal', 'mixed media', 'mobile games', 
+'movie theaters', 'music videos', 'musical', 'narrative film', 'nature', 'nonfiction', 'painting', 'people', 
+'performance art', 'performances', 'periodicals', 'pet fashion', 'photo', 'photobooks', 'places', 'playing cards', 
+'plays', 'poetry', 'pop', 'pottery', 'print', 'printing', 'product design', 'public art', 'punk', 'puzzles', 
+'quilts', 'r&b', 'radio & podcasts', 'ready-to-wear', 'residencies', 'restaurants', 'robots', 'rock', 'romance', 
+'science fiction', 'sculpture', 'shorts', 'small batch', 'software', 'sound', 'space exploration', 'spaces', 
+'stationery', 'tabletop games', 'taxidermy', 'television', 'textiles', 'thrillers', 'translations', 'typography', 
+'vegan', 'video', 'video art', 'video games', 'wearables', 'weaving', 'web', 'webcomics', 'webseries', 'woodworking', 
+'workshops', 'world music', 'young adult', 'zines', 'state'
+]
 
 data=data[cols]
-#data=data[cols].head(5)
+# longitud_descripcion
+data.columns=['goal', 'semanas_campana', 'art', 'comics', 'crafts',
+       'dance', 'design', 'fashion', 'film \& video', 'food', 'games',
+       'journalism', 'music', 'photography', 'publishing', 'technology',
+       'theater',
+       'AT', 'AU', 'BE', 'CA', 'CH', 'DE', 'DK', 'ES', 'FR', 'GB', 'HK', 'IE', 'IT', 'JP', 'LU', 'MX', 'NL', 'NO', 
+'NZ', 'SE', 'SG', 'US', '3d printing', 'academic', 'accessories', 'action', 'animals', 'animation', 'anthologies', 
+'apparel', 'apps', 'architecture', 'art books', 'audio', 'bacon', 'blues', 'calendars', 'camera equipment', 'candles', 
+'ceramics', 'children\'s books', 'childrenswear', 'chiptune', 'civic design', 'classical music', 'comedy', 
+'comic books', 'community gardens', 'conceptual art', 'cookbooks', 'country \& folk', 'couture', 'crochet', 
+'digital art', 'diy', 'diy electronics', 'documentary', 'drama', 'drinks', 'electronic music', 'embroidery', 
+'events', 'experimental', 'fabrication tools', 'faith', 'family', 'fantasy', 'farmer\'s markets', 'farms', 
+'festivals', 'fiction', 'fine art', 'flight', 'food trucks', 'footwear', 'gadgets', 'gaming hardware', 'glass', 
+'graphic design', 'graphic novels', 'hardware', 'hip-hop', 'horror', 'illustration', 'immersive', 'indie rock', 
+'installations', 'interactive design', 'jazz', 'jewelry', 'kids', 'knitting', 'latin', 'letterpress', 
+'literary journals', 'literary spaces', 'live games', 'makerspaces', 'metal', 'mixed media', 'mobile games', 
+'movie theaters', 'music videos', 'musical', 'narrative film', 'nature', 'nonfiction', 'painting', 'people', 
+'performance art', 'performances', 'periodicals', 'pet fashion', 'photo', 'photobooks', 'places', 'playing cards', 
+'plays', 'poetry', 'pop', 'pottery', 'print', 'printing', 'product design', 'public art', 'punk', 'puzzles', 
+'quilts', 'r\&b', 'radio \& podcasts', 'ready-to-wear', 'residencies', 'restaurants', 'robots', 'rock', 'romance', 
+'science fiction', 'sculpture', 'shorts', 'small batch', 'software', 'sound', 'space exploration', 'spaces', 
+'stationery', 'tabletop games', 'taxidermy', 'television', 'textiles', 'thrillers', 'translations', 'typography', 
+'vegan', 'video', 'video art', 'video games', 'wearables', 'weaving', 'web', 'webcomics', 'webseries', 'woodworking', 
+'workshops', 'world music', 'young adult', 'zines', 'state'
+]
 
-# Se categorizan las variables
-le2 = preprocessing.LabelEncoder()
-le2.fit(data["subcategory"])
-data["subcategory"]=le2.transform(data["subcategory"])
+cols=data.columns
 
-le3 = preprocessing.LabelEncoder()
-le3.fit(data["category"])
-data["category"]=le3.transform(data["category"])
+data["state"]= data['state'].map({'successful': 1, 'failed': 0})
+           
+data.to_csv("dataset_arbol.csv", sep = ";", na_rep = '', index = False)
 
-le4 = preprocessing.LabelEncoder()
-le4.fit(data["state"])
-data["state"]=le4.transform(data["state"])
-
-              
-#data.to_csv("dataset_arbol.csv", sep = ";", na_rep = '', index = False)
-
-features = list(cols[:4])
+features = list(cols[:183])
 data = data.as_matrix()
 data = np.matrix(data)
 
 X_train, X_test, y_train, y_test = train_test_split(
-    data[:,:-1], np.ravel(data[:,4:5]), test_size=0.30, random_state=42)
+    data[:,:-1], np.ravel(data[:,183:184]), test_size=0.30, random_state=42)
 
-#Se construye el arbol
-clf = tree.DecisionTreeClassifier(max_depth=5,max_leaf_nodes=5)
-clf = clf.fit(X_train, y_train)
+tree1 = DecisionTreeClassifier()
 
-#Se exporta el arbol al formato Graphviz 
-with open("iris.dot", 'w') as f:
-    f = tree.export_graphviz(clf, out_file=f)
-    
-#Poder de prediccion de la clase
-y_pred=clf.predict(X_test)
+bag = BaggingClassifier(tree1, n_estimators=100, max_samples=0.8, random_state=1)
+bag1=bag.fit(X_train, y_train)
+
+
+y_pred=bag1.predict(X_test)
 
 accuracy = sm.accuracy_score(y_test, y_pred)
 
 print("Precision: %.2f%%" % (accuracy*100.0))
 print("MSE:",mean_squared_error(y_test, y_pred))
-
-#Probabilidad de que el registro la clase pertenezca a cada una de las hojas
-#clf.predict_proba(X_test)
-
-#export_graphviz soporta otras opciones tal como colorear y la funcion Image permite renderizar la imagen en el libro de Ipython
-dot_data = tree.export_graphviz(clf, out_file=None, 
-                     feature_names=features,  
-                     class_names=['Exito', 'Fracaso'],  
-                     filled=True, rounded=True,  
-                     special_characters=True)  
-graph = pydotplus.graph_from_dot_data(dot_data)  
-Image(graph.create_png())  
-
