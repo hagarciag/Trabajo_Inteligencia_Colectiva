@@ -1,3 +1,11 @@
+
+# coding: utf-8
+
+# In[39]:
+
+
+#Arbol con ensable de estimadores
+
 from sklearn import tree  
 import pydotplus  
 from IPython.display import Image  
@@ -117,3 +125,19 @@ accuracy = sm.accuracy_score(y_test, y_pred)
 
 print("Precision: %.2f%%" % (accuracy*100.0))
 print("MSE:",mean_squared_error(y_test, y_pred))
+
+#Se deshabilitar el grafico del arbol porque no funciona al incluir el ensable de estimadores (BaggingClassifier)
+#Se exporta el arbol al formato Graphviz 
+#with open("iris.dot", 'w') as f:
+#    f = tree.export_graphviz(bag1, out_file=f)
+    
+#export_graphviz soporta otras opciones tal como colorear y la funcion Image permite renderizar la imagen en el libro de Ipython
+#dot_data = tree.export_graphviz(bag1, out_file=None, 
+#                     feature_names=features,  
+#                     class_names=['failed', 'succesful'],  
+#                     filled=True, rounded=True,  
+#                     special_characters=True)  
+#graph = pydotplus.graph_from_dot_data(dot_data)  
+#Image(graph.create_png())  
+
+
