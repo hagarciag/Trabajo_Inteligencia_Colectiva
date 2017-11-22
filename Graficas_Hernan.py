@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[37]:
-
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
@@ -18,6 +12,7 @@ data=pd.read_csv('consolidado.csv',  # el archivo
                     header=0)     # separador de los decimales para números
 labels=['[1-2]', '(2-6]', '(6-14]', '(14-29]', '(29-51]', '(51-88]', '(88-189]', '(189-105857]']
 data_bakers=data.loc[data['backers_count'] > 0]
+data=data[data['country']=='US']
 #print(data_bakers.columns)
 
 data_bakers['Cant Patrocinadores']=pd.qcut(data_bakers['backers_count'], 8,labels=labels)
@@ -25,7 +20,7 @@ data_bakers['Cant Patrocinadores']=pd.qcut(data_bakers['backers_count'], 8,label
 #Dinero obtenido
 bins_dinero=data_bakers[['Cant Patrocinadores', 'goal', 'pledged']]
 
-bins_dinero.columns=['Cant Patrocinadores', 'Objetivo', 'Obtenido']
+bins_dinero.columns=['Cant Patrocinadores', 'Objetivo', 'Recolectado']
 
 bins_dinero=bins_dinero.groupby('Cant Patrocinadores').sum()
 
@@ -35,7 +30,7 @@ data_bakers = data_bakers.join(df_state)
 
 bins_states=data_bakers[['Cant Patrocinadores', 'failed', 'successful']]
 
-bins_states.columns=['Cant Patrocinadores', 'Fallido', 'Exitoso']
+bins_states.columns=['Cant Patrocinadores', 'Cantidad Campañas Fallidas', 'Cantidad Campañas Exitosas']
 
 bins_states=bins_states.groupby('Cant Patrocinadores').sum()
 
@@ -102,10 +97,10 @@ bins_objetivo_exito['Fallido']=bins_objetivo_exito_porc_falledo
 bins_objetivo_exito.columns=['% Fallos', '% Exitos']
 
 #El exito de un proyecto depende del volumen de apoyo que recibo.
-bins_states.plot.bar(stacked=True,figsize=(10, 6));
+bins_states.plot.bar(figsize=(10, 6));
 #bins_dinero.plot.bar(figsize=(10, 6));
 #La cantidad de dinero recolectado aumenta con la meta. Entonces no se ve un fenomeno marcado de pocos dan mucho.
-bins_objetivo_recogido.plot.bar(stacked=True,figsize=(10, 6));
+bins_objetivo_recogido.plot.bar(figsize=(10, 6));
 #Mientras mayor sea la meta mas probabilidad de que falle el proyecto
 bins_objetivo_exito.plot.bar(figsize=(10, 6));
 #A pesar de que la probabilidad de fallo aumenta con el valor de  la meta, no cambia el porcentaje de patrocinadores 
@@ -113,5 +108,4 @@ bins_objetivo_exito.plot.bar(figsize=(10, 6));
 bins_objetivo_bakers.plot.bar(figsize=(10, 6));
 
 plt.show()
-
 
