@@ -1,4 +1,4 @@
-###Pronostico de exito o fallo de campañas en estado live
+###Pronostico de exito o fallo de campañas en estado live 
 import glob
 import pandas
 from sklearn import tree  

@@ -1,5 +1,5 @@
 from sklearn import tree  
-import pydotplus  
+import pydotplus 
 from IPython.display import Image  
 import pandas as pd
 import numpy as np
